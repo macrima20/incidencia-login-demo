@@ -1,0 +1,14 @@
+# Datos y logs generados al ejecutar la demo
+data/
+logs/
+*.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Editores / sistema
+.vscode/
+.idea/
+.DS_Store
