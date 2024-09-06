@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plataforma Institucional · Iniciar sesión</title>
+<style>
+  :root {
+    --bg: #f3f5f9; --card: #ffffff; --ink: #1d2433; --muted: #5d6779; --line: #dde2ea;
+    --brand: #1f4e8c; --brand-ink: #ffffff;
+    --ok: #1d7a46; --ok-bg: #e7f5ec; --warn: #9a5b00; --warn-bg: #fff4e0;
+    --err: #b42318; --err-bg: #fdecea; --info: #1f4e8c; --info-bg: #e8f0fb;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: var(--brand); color: var(--brand-ink); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 18px; margin: 0; font-weight: 600; letter-spacing: .2px; }
+  .badge { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.18); }
+  main { max-width: 1040px; margin: 28px auto; padding: 0 20px; display: grid; grid-template-columns: 380px 1fr; gap: 24px; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; }
+  .card h2 { font-size: 16px; margin: 0 0 16px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  input { width: 100%; padding: 10px 12px; font-size: 15px; border: 1px solid var(--line); border-radius: 8px; }
+  input:focus { outline: 2px solid #9db8e0; border-color: var(--brand); }
+  button { margin-top: 18px; width: 100%; padding: 11px; font-size: 15px; font-weight: 600; color: #fff; background: var(--brand); border: 0; border-radius: 8px; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+  .result { margin-top: 18px; padding: 12px 14px; border-radius: 8px; font-size: 14px; display: none; }
+  .result .head { font-weight: 600; margin-bottom: 2px; }
+  .result.wait { display: block; background: var(--info-bg); color: var(--info); }
+  .result.s200 { display: block; background: var(--ok-bg); color: var(--ok); }
+  .result.s4xx { display: block; background: var(--warn-bg); color: var(--warn); }
+  .result.s503 { display: block; background: var(--info-bg); color: var(--info); }
+  .result.s500 { display: block; background: var(--err-bg); color: var(--err); }
+  .hint { margin-top: 14px; font-size: 12px; color: var(--muted); }
+  .kv { display: grid; grid-template-columns: 190px 1fr; gap: 8px 12px; font-size: 14px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; font-weight: 600; }
+  .meter { height: 8px; background: #eceff4; border-radius: 4px; margin-top: 6px; overflow: hidden; max-width: 220px; }
+  .meter > span { display: block; height: 100%; background: var(--ok); transition: width .3s; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pill { font-weight: 700; padding: 1px 7px; border-radius: 6px; font-size: 12px; }
+  .p200 { background: var(--ok-bg); color: var(--ok); } .p4xx { background: var(--warn-bg); color: var(--warn); }
+  .p503 { background: var(--info-bg); color: var(--info); } .p500 { background: var(--err-bg); color: var(--err); }
+  .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 22px 0 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Plataforma Institucional</h1>
+  <span class="badge" id="version">versión …</span>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Iniciar sesión</h2>
+    <form id="login">
+      <label for="username">Usuario</label>
+      <input id="username" autocomplete="username" value="jgarcia">
+      <label for="password">Contraseña</label>
+      <input id="password" type="password" autocomplete="current-password" value="Clave*2024">
+      <button id="submit" type="submit">Ingresar</button>
+    </form>
+    <div id="result" class="result"><div class="head" id="result-head"></div><div id="result-msg"></div></div>
+    <p class="hint">Demo · usuario de prueba <b>jgarcia</b>, contraseña <b>Clave*2024</b></p>
+  </section>
+
+  <section class="card">
+    <h2>Panel de diagnóstico <span style="font-weight:400;color:var(--muted)">(solo demo)</span></h2>
+    <dl class="kv">
+      <dt>Versión desplegada</dt><dd id="d-version">—</dd>
+      <dt>Conexiones libres (pool)</dt><dd><span id="d-pool">—</span><div class="meter"><span id="d-pool-bar" style="width:0"></span></div></dd>
+      <dt>Último tiempo de respuesta</dt><dd id="d-time">—</dd>
+    </dl>
+    <div class="section-title">Intentos de inicio de sesión</div>
+    <table>
+      <thead><tr><th>#</th><th>Hora</th><th>Usuario</th><th>HTTP</th><th>Tiempo</th><th>Mensaje</th></tr></thead>
+      <tbody id="attempts"><tr><td colspan="6" style="color:var(--muted)">Aún no hay intentos.</td></tr></tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const secs = (ms) => (ms / 1000).toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " s";
+  const kind = (s) => (s === 200 ? "200" : s === 503 ? "503" : s >= 500 ? "500" : "4xx");
+  let count = 0;
+
+  async function refreshHealth() {
+    try {
+      const h = await (await fetch("/api/health", { cache: "no-store" })).json();
+      $("version").textContent = "versión " + h.version;
+      $("d-version").textContent = h.version;
+      if (h.pool) {
+        $("d-pool").textContent = h.pool.available + " de " + h.pool.size;
+        const pct = h.pool.size ? (100 * h.pool.available / h.pool.size) : 0;
+        $("d-pool-bar").style.width = pct + "%";
+        $("d-pool-bar").style.background = pct > 34 ? "var(--ok)" : pct > 0 ? "var(--warn)" : "var(--err)";
+      } else {
+        $("d-pool").textContent = "sin pool (una conexión por petición)";
+      }
+    } catch (e) { $("d-version").textContent = "sin respuesta del servidor"; }
+  }
+
+  function addAttempt(user, status, ms, msg) {
+    if (count === 0) $("attempts").innerHTML = "";
+    count += 1;
+    const tr = document.createElement("tr");
+    const hora = new Date().toLocaleTimeString("es-CO", { hour12: false });
+    const cells = [count, hora, user, null, secs(ms), msg];
+    cells.forEach((v, i) => {
+      const td = document.createElement("td");
+      if (i === 3) { const p = document.createElement("span"); p.className = "pill p" + kind(status); p.textContent = status; td.appendChild(p); }
+      else { td.textContent = v; if (i === 4) td.className = "num"; }
+      tr.appendChild(td);
+    });
+    $("attempts").prepend(tr);
+  }
+
+  $("login").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const user = $("username").value.trim();
+    const t0 = performance.now();
+    $("submit").disabled = true;
+    $("result").className = "result wait";
+    $("result-head").textContent = "Validando credenciales…";
+    $("result-msg").textContent = "0,00 s";
+    const timer = setInterval(() => { $("result-msg").textContent = secs(performance.now() - t0); }, 100);
+    let status = 0, msg = "";
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: user, password: $("password").value })
+      });
+      status = res.status;
+      const body = await res.json().catch(() => ({}));
+      msg = body.mensaje || res.statusText;
+      if (body.referencia) msg += " (ref. " + body.referencia + ")";
+    } catch (e) { status = 0; msg = "No hay conexión con el servidor"; }
+    clearInterval(timer);
+    const ms = performance.now() - t0;
+    $("submit").disabled = false;
+    $("result").className = "result s" + kind(status);
+    $("result-head").textContent = "HTTP " + status + " · " + secs(ms);
+    $("result-msg").textContent = msg;
+    $("d-time").textContent = secs(ms);
+    addAttempt(user, status, ms, msg);
+    refreshHealth();
+  });
+
+  refreshHealth();
+</script>
+</body>
+</html>
