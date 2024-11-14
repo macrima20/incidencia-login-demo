@@ -24,6 +24,8 @@ LOG_PATH = os.environ.get("LOG_PATH", os.path.join(BASE_DIR, "logs", "app.log"))
 # --- Base de datos -------------------------------------------------------------
 DB_PATH = os.environ.get("DB_PATH", os.path.join(BASE_DIR, "data", "app.db"))
 QUERY_TIMEOUT_S = _float("QUERY_TIMEOUT_S", 6.0)  # tiempo máximo por consulta
+POOL_SIZE = _int("POOL_SIZE", 3)  # conexiones reutilizables
+POOL_ACQUIRE_TIMEOUT_S = _float("POOL_ACQUIRE_TIMEOUT_S", 2.0)  # espera máxima por una conexión libre
 
 # --- Simulación de la latencia de disco de producción --------------------------
 # En producción la tabla `users` es mucho más grande y vive en un servidor de

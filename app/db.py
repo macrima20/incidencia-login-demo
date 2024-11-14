@@ -1,13 +1,19 @@
 """Acceso a la base de datos SQLite."""
 import logging
+import queue
 import sqlite3
 import time
 
 log = logging.getLogger("DBConnection")
+pool_log = logging.getLogger("ConnectionPool")
 
 
 class QueryTimeoutError(sqlite3.OperationalError):
     """La consulta superó QUERY_TIMEOUT_S y fue cancelada."""
+
+
+class PoolExhaustedError(RuntimeError):
+    """No hubo una conexión libre dentro de POOL_ACQUIRE_TIMEOUT_S."""
 
 
 class DBConnection:
@@ -49,3 +55,27 @@ class DBConnection:
 
     def close(self):
         self._conn.close()
+
+
+class ConnectionPool:
+    """Pool de conexiones reutilizables: evita abrir una conexión en cada petición."""
+
+    def __init__(self, factory, size, acquire_timeout_s):
+        self.size = size
+        self.acquire_timeout_s = acquire_timeout_s
+        self._idle = queue.LifoQueue()
+        for _ in range(size):
+            self._idle.put(factory())
+
+    def acquire(self):
+        try:
+            return self._idle.get(timeout=self.acquire_timeout_s)
+        except queue.Empty:
+            pool_log.error("Connection pool exhausted (%d/%d connections in use)", self.size, self.size)
+            raise PoolExhaustedError("no free connection in the pool") from None
+
+    def release(self, conn):
+        self._idle.put(conn)
+
+    def available(self):
+        return self._idle.qsize()
