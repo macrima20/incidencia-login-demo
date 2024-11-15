@@ -30,6 +30,10 @@ class LoginTest(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertTrue(body["token"])
 
+    def test_login_ignora_mayusculas_en_el_usuario(self):
+        status, _ = self.login("JGarcia", "Clave*2024")
+        self.assertEqual(status, 200)
+
     def test_clave_incorrecta(self):
         status, body = self.login("jgarcia", "otra-clave")
         self.assertEqual(status, 401)

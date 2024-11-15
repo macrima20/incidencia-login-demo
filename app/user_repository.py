@@ -2,9 +2,11 @@
 
 
 class UserRepository:
+    # El usuario puede escribir su nombre con mayúsculas o minúsculas:
+    # "JGarcia", "jgarcia" y "JGARCIA" son la misma cuenta.
     SQL_FIND_BY_USERNAME = (
         "SELECT id, username, password_hash, active FROM users "
-        "WHERE username = ?"
+        "WHERE LOWER(username) = LOWER(?)"
     )
 
     def __init__(self, pool):
