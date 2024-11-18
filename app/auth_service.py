@@ -2,9 +2,14 @@
 import logging
 import sqlite3
 
+from .db import PoolExhaustedError
 from .security import new_session_token, verify_password
 
 log = logging.getLogger("AuthService")
+
+
+class AuthUnavailableError(Exception):
+    """No se pudo consultar la base de datos: es una falla del sistema, no del usuario."""
 
 
 class AuthService:
@@ -12,14 +17,18 @@ class AuthService:
         self._users = users  # UserRepository
 
     def authenticate(self, username, password):
-        """Devuelve un token de sesión si las credenciales son válidas; si no, None."""
+        """Devuelve un token si las credenciales son válidas; None si no lo son.
+
+        Lanza AuthUnavailableError si la base de datos no responde (INC-204):
+        antes ese caso se reportaba como "credenciales no válidas".
+        """
         try:
             user = self._users.find_by_username(username)
-            if user is None or not user["active"]:
-                return None
-            if not verify_password(password, user["password_hash"]):
-                return None
-            return new_session_token()
-        except sqlite3.Error:
-            log.error("Error validating user token")
+        except (sqlite3.Error, PoolExhaustedError) as exc:
+            log.error("User lookup failed: %s", type(exc).__name__)
+            raise AuthUnavailableError() from exc
+        if user is None or not user["active"]:
             return None
+        if not verify_password(password, user["password_hash"]):
+            return None
+        return new_session_token()
