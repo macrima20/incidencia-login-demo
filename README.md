@@ -31,6 +31,19 @@ python -m unittest -v
 | `migrate.py`        | aplica las migraciones pendientes                     |
 | `servidor.py`       | inicia el servidor web                                |
 
+## Incidencia INC-204 (hotfix 1.1.1)
+
+| Recurso | Para qué |
+| --- | --- |
+| `docs/INC-204/issue.md` | Descripción, evidencias y clasificación de la incidencia |
+| `docs/INC-204/analisis_tecnico.md` | Reproducción, causa raíz, riesgos y seguridad |
+| `docs/INC-204/pull_request.md` | Descripción del pull request |
+| `tests/test_inc204_regresion.py` | Reproduce los tres síntomas (fallan en v1.1.0, pasan en v1.1.1) |
+| `tests/test_inc204_seguridad.py` | Verificación mínima de seguridad |
+| `herramientas/plan_consulta.py` | Muestra el plan de la consulta de login con y sin el índice |
+
+Al pasar de la v1.1.0 a la v1.1.1 ejecute `python migrate.py` para crear el índice.
+
 ## Sobre la latencia simulada
 
 En producción la tabla `users` es mucho más grande y está en un servidor de base
