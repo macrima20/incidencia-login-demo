@@ -1,3 +1,3 @@
 """Plataforma institucional (demo): módulo de autenticación."""
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
