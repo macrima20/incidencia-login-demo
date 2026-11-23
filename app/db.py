@@ -1,5 +1,6 @@
 """Acceso a la base de datos SQLite."""
 import logging
+from contextlib import contextmanager
 import queue
 import sqlite3
 import time
@@ -76,6 +77,15 @@ class ConnectionPool:
 
     def release(self, conn):
         self._idle.put(conn)
+
+    @contextmanager
+    def connection(self):
+        """Presta una conexión y la devuelve SIEMPRE al pool, incluso si hay un error (INC-204)."""
+        conn = self.acquire()
+        try:
+            yield conn
+        finally:
+            self.release(conn)
 
     def available(self):
         return self._idle.qsize()
